@@ -1,0 +1,36 @@
+name: Deploy Website
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  validate-html:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+
+      - name: Validar HTML
+        uses: Cy2003/html5-validator-action@v1
+        with:
+          file: 'index.html'
+
+  deploy:
+    needs: validate-html
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Pages
+        uses: actions/configure-pages@v4
+
+      - name: Subir artefacto
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Desplegar en GitHub Pages
+        uses: actions/deploy-pages@v4

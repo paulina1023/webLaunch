@@ -10,21 +10,34 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
 jobs:
-  validate-html:
+  validate-and-lint:
     runs-on: ubuntu-latest
     steps:
       - name: Descargar codigo
         uses: actions/checkout@v4
 
-      - name: Validar HTML
-        uses: Cy2003/html5-validator-action@v1
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
         with:
-          file: 'index.html'
+          node-version: '20'
+
+      - name: Validar sintaxis CSS
+        run: |
+          npm install -g stylelint stylelint-config-standard
+          echo '{"extends": "stylelint-config-standard"}' > .stylelintrc.json
+          npx stylelint "**/*.css"
 
   deploy:
-    needs: validate-html
+    needs: validate-and-lint
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Descargar codigo
         uses: actions/checkout@v4
@@ -38,4 +51,5 @@ jobs:
           path: '.'
 
       - name: Desplegar en GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4

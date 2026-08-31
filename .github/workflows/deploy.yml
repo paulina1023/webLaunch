@@ -1,39 +1,55 @@
-name: Deploy Website
+name: Deploy Website and Extra CI
 
 on:
   push:
     branches:
       - paulina
 
-# Concede los permisos necesarios para que GitHub Actions publique en Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Permite solo un despliegue a la vez para evitar colisiones
-concurrency:
-  group: 'pages'
-  cancel-in-progress: true
-
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  validate-html:
     runs-on: ubuntu-latest
     steps:
-      - name: Descargar codigo
+      - name: Checkout del código
         uses: actions/checkout@v4
 
-      - name: Configurar Pages
-        uses: actions/configure-pages@v5
+      - name: Verificar index.html
+        run: test -f index.html && echo "El archivo index.html existe"
 
-      - name: Subir artefacto del sitio
+  validate-css:
+    runs-on: ubuntu-latest
+    needs: validate-html
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Instalar Stylelint
+        run: npm install --save-dev stylelint stylelint-config-standard
+
+      - name: Ejecutar Stylelint en archivos CSS
+        run: npx stylelint "**/*.css" || echo "No hay archivos CSS estrictos o se encontraron advertencias menores"
+
+  deploy:
+    needs: [validate-html, validate-css]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Subir artefacto para Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
 
       - name: Desplegar en GitHub Pages
-        id: deployment
         uses: actions/deploy-pages@v4

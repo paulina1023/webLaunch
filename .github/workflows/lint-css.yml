@@ -2,15 +2,14 @@ name: Lint CSS
 
 on:
   push:
-    branches: [ paulina ]
-  pull_request:
-    branches: [ paulina ]
+    branches:
+      - paulina
 
 jobs:
   stylelint:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout del codigo
+      - name: Descargar codigo
         uses: actions/checkout@v4
 
       - name: Configurar Node.js
@@ -18,10 +17,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Instalar Linter de CSS
+      - name: Instalar y Ejecutar Stylelint
         run: |
-          npm init -y
-          npm install --save-dev stylelint stylelint-config-standard
-
-      - name: Validar CSS
-        run: npx stylelint "**/*.css"
+          npm install stylelint stylelint-config-standard --save-dev
+          npx stylelint "**/*.css"

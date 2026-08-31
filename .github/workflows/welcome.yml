@@ -3,28 +3,22 @@ name: Welcome Notifier
 on:
   issues:
     types: [opened]
-  pull_request:
-    types: [opened]
+
+permissions:
+  issues: write
+  contents: read
 
 jobs:
   greeting:
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
-      pull-requests: write
-
     steps:
-      - name: Enviar mensaje de bienvenida
+      - name: Crear comentario de bienvenida
         uses: actions/github-script@v7
         with:
           script: |
-            const isIssue = !!context.payload.issue;
-            const issueComment = `¡Hola @${context.actor}! 👋 Gracias por abrir esta issue en **WebLaunch**. El equipo la revisará pronto.`;
-            const prComment = `¡Hola @${context.actor}! 🚀 Gracias por tu contribución a **WebLaunch**. Las pruebas automatizadas se están ejecutando para validar tus cambios.`;
-
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: isIssue ? issueComment : prComment
+              body: `¡Hola @${context.actor}! 👋 Gracias por abrir esta issue en **WebLaunch**. El equipo la revisará pronto.`
             })

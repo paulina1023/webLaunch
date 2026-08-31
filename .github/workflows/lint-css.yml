@@ -2,9 +2,9 @@ name: Lint CSS
 
 on:
   push:
-    branches: [ main ]
+    branches: [ paulina ]
   pull_request:
-    branches: [ main ]
+    branches: [ paulina ]
 
 jobs:
   stylelint:
